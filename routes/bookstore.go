@@ -22,5 +22,9 @@ func SetupRouter() *gin.Engine {
 	r.PUT(constants.BookIdRoute, controllers.UpdateBook)
 	r.DELETE(constants.BookIdRoute, controllers.DeleteBook)
 
+	// User CRUD
+	r.POST(constants.UserRoute, controllers.CreateUser)
+	r.POST(constants.LoginRoute, controllers.Login)
+
 	return r
 }

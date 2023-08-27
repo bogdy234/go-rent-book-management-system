@@ -6,6 +6,7 @@ import (
 	"rent-book-management-system/models"
 	"rent-book-management-system/utils"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -68,6 +69,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	//TODO: jwt to be added
+
 	c.JSON(http.StatusOK, gin.H{
 		"user": gin.H{
 			"email":     user.Email,
@@ -75,4 +78,15 @@ func Login(c *gin.Context) {
 			"lastName":  user.LastName,
 		},
 	})
+}
+
+func TestSession(c *gin.Context) {
+	session := sessions.Default(c)
+
+	if session.Get("hello") != "world" {
+		session.Set("hello", "world")
+		session.Save()
+	}
+
+	c.JSON(http.StatusOK, gin.H{"session": session.Get("hello")})
 }

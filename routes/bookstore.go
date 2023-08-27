@@ -2,15 +2,18 @@ package routes
 
 import (
 	"net/http"
+	"rent-book-management-system/config"
 	"rent-book-management-system/constants"
 	"rent-book-management-system/controllers"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
+	r.Use(sessions.Sessions("user_session", config.SessionStore))
 	// Ping test
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
@@ -25,6 +28,9 @@ func SetupRouter() *gin.Engine {
 	// User CRUD
 	r.POST(constants.UserRoute, controllers.CreateUser)
 	r.POST(constants.LoginRoute, controllers.Login)
+
+	// Test session
+	r.GET("/testsession", controllers.TestSession)
 
 	return r
 }

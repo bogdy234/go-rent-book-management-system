@@ -38,6 +38,7 @@ func Init(envPath ...string) {
 	LoadEnvVariables(p)
 	ConnectToDatabase()
 	InitValidate()
+	InitSessionStore()
 }
 
 func GetDB() *gorm.DB {

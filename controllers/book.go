@@ -9,17 +9,17 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type Body struct {
-	Title       string
-	Author      string
-	Description string
-	PricePerDay float32
-	Qty         int
-}
-
 func CreateBook(c *gin.Context) {
-	var b Body
+	var b models.CreateBookInput
 	c.Bind(&b)
+
+	// validate book
+	err := config.Validate.Struct(b)
+	if err != nil {
+		errs := err.(validator.ValidationErrors)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errs.Translate(config.Trans)})
+		return
+	}
 
 	book := models.Book{
 		Title:       b.Title,
@@ -27,14 +27,6 @@ func CreateBook(c *gin.Context) {
 		Description: b.Description,
 		PricePerDay: b.PricePerDay,
 		Qty:         b.Qty,
-	}
-
-	// validate book
-	err := config.Validate.Struct(book)
-	if err != nil {
-		errs := err.(validator.ValidationErrors)
-		c.JSON(http.StatusBadRequest, gin.H{"errors": errs.Translate(config.Trans)})
-		return
 	}
 
 	// create new entry in database
@@ -48,25 +40,59 @@ func CreateBook(c *gin.Context) {
 }
 
 func GetBook(c *gin.Context) {
+	// get id from query params
 	id, _ := c.Params.Get("id")
 
 	var book models.Book
 	config.GetDB().First(&book, id)
 
+	// error if record is not found in DB
 	if book.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book with provided ID not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Record not found!"})
 		return
 	}
 
+	// return the record
 	c.JSON(200, gin.H{
 		"book": book,
 	})
 }
 
 func UpdateBook(c *gin.Context) {
+	var b models.UpdateBookInput
+	c.Bind(&b)
 
+	// validate book
+	err := config.Validate.Struct(b)
+	if err != nil {
+		errs := err.(validator.ValidationErrors)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errs.Translate(config.Trans)})
+		return
+	}
+
+	// error if record is not found in DB
+	var book models.Book
+	if err := config.GetDB().Where("id = ?", c.Param("id")).First(&book).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	// update entry in DB
+	if err := config.GetDB().Model(&book).Updates(b).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// return created book
+	c.JSON(http.StatusOK, gin.H{"book": book})
 }
 
 func DeleteBook(c *gin.Context) {
+	id, _ := c.Params.Get("id")
 
+	if err := config.GetDB().Delete(&models.Book{}, id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Record successfully deleted"})
 }

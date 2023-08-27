@@ -8,3 +8,4 @@ const BookIdRoute = "/book/:id"
 // User
 const UserRoute = "/user"
 const LoginRoute = "/user/login"
+const LogoutRoute = "/user/logout"

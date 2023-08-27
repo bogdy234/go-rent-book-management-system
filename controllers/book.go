@@ -6,10 +6,7 @@ import (
 	"rent-book-management-system/models"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
 type Body struct {
@@ -19,11 +16,6 @@ type Body struct {
 	PricePerDay float32
 	Qty         int
 }
-
-var (
-	uni      *ut.UniversalTranslator
-	validate *validator.Validate
-)
 
 func CreateBook(c *gin.Context) {
 	var b Body
@@ -37,28 +29,21 @@ func CreateBook(c *gin.Context) {
 		Qty:         b.Qty,
 	}
 
-	en := en.New()
-	uni = ut.New(en, en)
-
-	trans, _ := uni.GetTranslator("en")
-	validate = validator.New()
-	en_translations.RegisterDefaultTranslations(validate, trans)
-
 	// validate book
-	err := validate.Struct(book)
+	err := config.Validate.Struct(book)
 	if err != nil {
-		// translate all error at once
 		errs := err.(validator.ValidationErrors)
-
-		c.JSON(http.StatusBadRequest, gin.H{"errors": errs.Translate(trans)})
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errs.Translate(config.Trans)})
 		return
 	}
 
+	// create new entry in database
 	if err := config.GetDB().Create(&book).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	// return created book
 	c.JSON(http.StatusOK, gin.H{"book": book})
 }
 
@@ -79,22 +64,7 @@ func GetBook(c *gin.Context) {
 }
 
 func UpdateBook(c *gin.Context) {
-	// id, _ := c.Params.Get("id")
 
-	// var b Body
-	// c.Bind(&b)
-
-	// var book models.Book
-	// config.GetDB().First(&book, id).Update()
-
-	// if book.ID == 0 {
-	// 	c.JSON(http.StatusNotFound, gin.H{"error": "Book with provided ID not found"})
-	// 	return
-	// }
-
-	// c.JSON(200, gin.H{
-	// 	"book": book,
-	// })
 }
 
 func DeleteBook(c *gin.Context) {

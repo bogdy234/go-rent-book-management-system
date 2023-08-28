@@ -34,9 +34,5 @@ func SetupRouter() *gin.Engine {
 	r.PUT(constants.UserRoute, middlewares.RequireAuth, controllers.UpdateUser)
 	r.DELETE(constants.UserRoute, middlewares.RequireAuth, controllers.DeleteUser)
 
-	// Test session
-	r.GET("/testsession", controllers.TestSession)
-	r.GET("/test-jwt", controllers.TestJwt)
-
 	return r
 }

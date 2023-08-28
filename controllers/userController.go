@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"rent-book-management-system/config"
 	"rent-book-management-system/models"
 	"rent-book-management-system/utils"
@@ -135,56 +133,4 @@ func DeleteUser(c *gin.Context) {
 	config.GetDB().Delete(&user)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
-}
-
-// TEST
-
-func TestSession(c *gin.Context) {
-	session := sessions.Default(c)
-
-	if session.Get("hello") != "world" {
-		session.Set("hello", "world")
-		session.Save()
-	}
-
-	// session.Options({
-
-	// })
-	// session.Set("token", "MTY5MzE2MzEwNHxEdi1CQkFFQ180SUFBUkFCRUFBQUpQLUNBQUVHYzNSeWFXNW5EQWNBQldobGJHeHZCbk4wY21sdVp3d0hBQVYzYjNKc1pBPT18utaIWdDjycs7rOSQvpAdp8YhS61VgxhdNthe05Z6nRw%3D")
-
-	c.JSON(http.StatusOK, gin.H{"session": session.Get("token")})
-}
-
-func TestJwt(c *gin.Context) {
-	byteArrSecret := []byte(os.Getenv("JWT_SECRET"))
-
-	// ENCODE
-	// Create a new token object, specifying signing method and the claims
-	// you would like it to contain.
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"foo": "bar",
-		"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
-	})
-
-	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString(byteArrSecret)
-
-	fmt.Println(tokenString, err)
-
-	// DECODE
-	token, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return byteArrSecret, nil
-	})
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims["foo"], claims["nbf"])
-	} else {
-		fmt.Println(err)
-	}
 }

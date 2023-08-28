@@ -22,7 +22,7 @@ func SetupRouter() *gin.Engine {
 	})
 
 	// Book CRUD
-	r.POST(constants.BookRoute, middlewares.RequireAuth, controllers.CreateBook)
+	r.POST(constants.BookRoute, middlewares.RequireAdmin, controllers.CreateBook)
 	r.GET(constants.BookIdRoute, controllers.GetBook)
 	r.PUT(constants.BookIdRoute, controllers.UpdateBook)
 	r.DELETE(constants.BookIdRoute, controllers.DeleteBook)

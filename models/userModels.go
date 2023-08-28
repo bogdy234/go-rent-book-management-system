@@ -9,6 +9,7 @@ type User struct {
 	FirstName string  `json:"firstName"`
 	LastName  string  `json:"lastName"`
 	Books     []*Book `gorm:"many2many:user_books"`
+	IsAdmin   bool    `json:"isAdmin" gorm:"default:false"`
 }
 
 type CreateUserInput struct {

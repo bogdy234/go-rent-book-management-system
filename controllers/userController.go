@@ -134,3 +134,55 @@ func DeleteUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
+
+func RentBook(c *gin.Context) {
+	// get user from Context
+	userReq, _ := c.Get("user")
+	user, _ := userReq.(models.User)
+
+	// get bookID from req params
+	bookID, found := c.Params.Get("bookID")
+	if !found {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Book id not provided",
+		})
+		return
+	}
+
+	// check if this book is already rented by this user
+	var bookRented models.Book
+	config.GetDB().Model(&user).Association("Books").Find(&bookRented)
+	if bookRented.ID != 0 {
+		c.JSON(http.StatusConflict, gin.H{"error": "This book is already rented by this user"})
+		return
+	}
+
+	// get the book from DB
+	var book models.Book
+	config.GetDB().First(&book, bookID)
+
+	if err := config.GetDB().Model(&user).Where("id = ?", user.ID).Association("Books").Append(&book); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
+	// return rented book
+	c.JSON(http.StatusOK, gin.H{
+		"rentedBook": book,
+	})
+}
+
+func GetUserRentedBooks(c *gin.Context) {
+	// get user from Context
+	userReq, _ := c.Get("user")
+	user, _ := userReq.(models.User)
+
+	// get books for user
+	var books []models.Book
+	config.GetDB().Model(&user).Association("Books").Find(&books)
+
+	// return books
+	c.JSON(http.StatusOK, gin.H{
+		"rentedBooks": books,
+	})
+}

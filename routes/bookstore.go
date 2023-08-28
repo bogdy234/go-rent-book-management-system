@@ -31,8 +31,12 @@ func SetupRouter() *gin.Engine {
 	r.POST(constants.UserRoute, controllers.CreateUser)
 	r.POST(constants.LoginRoute, controllers.Login)
 	r.POST(constants.LogoutRoute, controllers.Logout)
+
 	r.PUT(constants.UserRoute, middlewares.RequireAuth, controllers.UpdateUser)
 	r.DELETE(constants.UserRoute, middlewares.RequireAuth, controllers.DeleteUser)
+
+	r.POST(constants.RentBook, middlewares.RequireAuth, controllers.RentBook)
+	r.GET(constants.RentedBooks, middlewares.RequireAuth, controllers.GetUserRentedBooks)
 
 	return r
 }

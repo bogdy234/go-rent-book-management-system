@@ -23,3 +23,8 @@ type LoginInput struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
+
+type UpdateUser struct {
+	FirstName string `json:"firstName" validate:"omitempty,min=3,max=50"`
+	LastName  string `json:"lastName" validate:"omitempty,min=3,max=50"`
+}

@@ -99,6 +99,44 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "User logged out"})
 }
 
+func UpdateUser(c *gin.Context) {
+	var u models.UpdateUser
+	c.Bind(&u)
+
+	// validate user
+	err := config.Validate.Struct(u)
+	if err != nil {
+		errs := err.(validator.ValidationErrors)
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errs.Translate(config.Trans)})
+		return
+	}
+
+	// get user from Context
+	userReq, _ := c.Get("user")
+	user, _ := userReq.(models.User)
+
+	// update user
+	if err := config.GetDB().Model(&user).Updates(u).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// return new user data
+	c.JSON(http.StatusOK, gin.H{
+		"user": user,
+	})
+}
+
+func DeleteUser(c *gin.Context) {
+	// get user from Context
+	userReq, _ := c.Get("user")
+	user, _ := userReq.(models.User)
+
+	config.GetDB().Delete(&user)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
 // TEST
 
 func TestSession(c *gin.Context) {
